@@ -63,7 +63,7 @@ jobs:
         run: ./gradlew --no-daemon testDebugUnitTest assembleDebug assembleDebugAndroidTest lintDebug
       - name: APK must not request network permissions
         run: scripts/check_no_internet.sh app/build/outputs/apk/debug/app-debug.apk
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: apks
           path: app/build/outputs/apk/**/*.apk

@@ -1,0 +1,19 @@
+/target/
+**/build/
+.gradle/
+local.properties
+.idea/
+*.iml
+.kotlin/
+__pycache__/
+*.pyc
+.venv/
+/training/data/
+.DS_Store
+/dist/
+
+# Release signing: NEVER commit these
+/release/
+keystore.properties
+*.jks
+*.keystore

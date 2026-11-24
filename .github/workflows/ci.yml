@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+  NDK_VERSION: 27.2.12479018
+
+jobs:
+  rust:
+    name: Rust (fmt, clippy host + Android, tests, deny, audit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+          targets: aarch64-linux-android, armv7-linux-androideabi
+      - uses: Swatinem/rust-cache@v2
+      - name: Install NDK
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "ndk;${NDK_VERSION}" > /dev/null
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/${NDK_VERSION}" >> "$GITHUB_ENV"
+      - name: Install cargo-ndk and cargo-deny
+        run: cargo install --locked cargo-ndk cargo-deny
+      - run: cargo fmt --all --check
+      - name: clippy (host)
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - name: clippy (Android arm64 + armv7, real NDK camera/sensor code)
+        run: |
+          cargo ndk -t arm64-v8a -P 29 clippy -p facetilt-jni --all-targets --locked -- -D warnings
+          cargo ndk -t armeabi-v7a -P 29 clippy -p facetilt-jni --all-targets --locked -- -D warnings
+      - name: cargo test
+        run: cargo test --workspace --locked
+      - name: cargo deny (bans incl. network/telemetry crates, licenses, sources, advisories)
+        run: cargo deny check
+      - name: Dependency audit (cargo tree)
+        run: scripts/audit_deps.sh
+
+  android:
+    name: Android (unit tests, APK, androidTest APK, lint, no-INTERNET check)
+    runs-on: ubuntu-latest
+    needs: rust
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android, armv7-linux-androideabi
+      - uses: Swatinem/rust-cache@v2
+      - name: Install SDK packages
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install \
+            "ndk;${NDK_VERSION}" "platforms;android-36" "build-tools;35.0.0" > /dev/null
+      - run: cargo install --locked cargo-ndk
+      - name: Build + test (one command builds Rust and Kotlin)
+        run: ./gradlew --no-daemon testDebugUnitTest assembleDebug assembleDebugAndroidTest lintDebug
+      - name: APK must not request network permissions
+        run: scripts/check_no_internet.sh app/build/outputs/apk/debug/app-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apks
+          path: app/build/outputs/apk/**/*.apk
+
+  instrumented:
+    name: Instrumented permission-flow test (emulator)
+    runs-on: ubuntu-latest
+    needs: android
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-linux-android
+      - run: cargo install --locked cargo-ndk && rustup target add x86_64-linux-android
+      - run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "ndk;${NDK_VERSION}" "platforms;android-36" > /dev/null
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          script: ./gradlew --no-daemon -Pfacetilt.abis=x86_64 -Pfacetilt.rustProfile=debug connectedDebugAndroidTest
+
+  training:
+    name: Training pipeline (syntax + box-filter self-check)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install numpy pillow
+      - run: python -m py_compile training/facetilt/*.py
+      - run: cd training && python -m unittest discover -s tests -v

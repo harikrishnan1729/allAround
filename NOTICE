@@ -1,0 +1,20 @@
+allAround
+Copyright 2026 The allAround authors
+
+This product includes work from third parties:
+
+* Android Open Source Project (https://source.android.com/)
+  crates/decision/src/proposer.rs is a Rust port of the orientation algorithm in
+  frameworks/base, WindowOrientationListener.java.
+  Copyright (C) The Android Open Source Project. Licensed under the Apache License, Version 2.0.
+
+* FairFace dataset (https://github.com/joojs/fairface), licensed CC BY 4.0
+  K. Karkkainen and J. Joo, "FairFace: Face Attribute Dataset for Balanced Race, Gender, and
+  Age for Bias Measurement and Mitigation", WACV 2021.
+  The model in crates/vision/model/ was trained on images derived from this dataset, and
+  crates/vision/tests/fixtures/classifier.bin contains an average image derived from it.
+  No FairFace images are included in this repository. Details: training/DATA_LICENSES.md.
+
+* tract (https://github.com/sonos/tract), MIT OR Apache-2.0: the on-device inference engine.
+
+Other third-party code and its licences are listed in THIRD_PARTY_NOTICES.md.

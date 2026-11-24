@@ -1,0 +1,41 @@
+[workspace]
+resolver = "2"
+members = ["crates/decision", "crates/core", "crates/vision", "crates/jni_bridge"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.91"
+license = "Apache-2.0"
+publish = false
+
+[workspace.dependencies]
+facetilt-decision = { path = "crates/decision" }
+facetilt-core = { path = "crates/core" }
+facetilt-vision = { path = "crates/vision" }
+log = "0.4"
+tract-onnx = { version = "0.23", default-features = false }
+jni = "0.21.1"
+ndk = { version = "0.9", default-features = false }
+ndk-sys = { version = "0.6" }
+android_logger = { version = "0.15", default-features = false }
+libc = "0.2"
+zeroize = { version = "1", default-features = false }
+
+[workspace.lints.rust]
+unsafe_op_in_unsafe_fn = "deny"
+missing_debug_implementations = "warn"
+
+[workspace.lints.clippy]
+undocumented_unsafe_blocks = "deny"
+unwrap_used = "warn"
+panic = "warn"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+# Must stay "unwind": every FFI entry point uses catch_unwind, which needs unwinding.
+panic = "unwind"
+debug = false
+strip = "debuginfo"

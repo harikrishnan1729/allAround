@@ -1,0 +1,8 @@
+# Versions used to train the shipped model (2026-11-20, CPU only, Python 3.13).
+torch==2.15.0
+onnx==1.23.2
+onnxruntime==1.29.0
+onnxscript==0.7.2
+numpy==2.5.3
+pillow==12.3.0
+scikit-image==0.26.0

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">allAround</string>
+    <string name="tile_label">Face detection</string>
+    <string name="notif_channel_name">Status</string>
+    <string name="notif_channel_desc">Shown while face detection is on. Android requires it for apps that may use the camera.</string>
+    <string name="notif_title">Face detection is on</string>
+    <string name="notif_text">The camera opens briefly when you rotate the phone.</string>
+    <string name="notif_pause">Pause</string>
+    <string name="notif_resume_title">Face detection is paused</string>
+    <string name="notif_resume_text">Tap to turn it back on.</string>
+</resources>

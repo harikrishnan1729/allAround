@@ -1,0 +1,16 @@
+[package]
+name = "facetilt-vision"
+description = "Luma downsampling, orientation transform and int8 head-orientation classifier."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+tract-onnx = { workspace = true }
+facetilt-decision = { workspace = true }
+zeroize = { workspace = true }
+
+[lints]
+workspace = true

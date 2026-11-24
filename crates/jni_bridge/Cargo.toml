@@ -1,0 +1,29 @@
+[package]
+name = "facetilt-jni"
+description = "JNI surface, NDK sensors and NDK Camera2 capture for FaceTilt (cdylib libfacetilt.so)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[lib]
+name = "facetilt"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+facetilt-core = { workspace = true }
+facetilt-decision = { workspace = true }
+facetilt-vision = { workspace = true }
+jni = { workspace = true }
+log = { workspace = true }
+
+[target.'cfg(target_os = "android")'.dependencies]
+ndk = { workspace = true, features = ["api-level-29"] }
+ndk-sys = { workspace = true, features = ["media", "nativewindow"] }
+android_logger = { workspace = true }
+libc = { workspace = true }
+zeroize = { workspace = true }
+
+[lints]
+workspace = true

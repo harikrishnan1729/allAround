@@ -15,7 +15,7 @@ facetilt-core = { path = "crates/core" }
 facetilt-vision = { path = "crates/vision" }
 log = "0.4"
 tract-onnx = { version = "0.23", default-features = false }
-jni = "0.21.1"
+jni = "0.22.4"
 ndk = { version = "0.9", default-features = false }
 ndk-sys = { version = "0.6" }
 android_logger = { version = "0.15", default-features = false }
